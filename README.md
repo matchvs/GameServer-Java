@@ -10,7 +10,7 @@
 
 ```shell
 java-gameServer
-├── JavaGameServer
+├── demo
 ├── Config.json
 ├── Dockerfile
 ├── gsmeta
@@ -77,13 +77,13 @@ gameServer 本地调试运行日志在IDE的输出终端查看，线上调试再
 
 ### 上线
 
-代码编写完成后，将代码打成jar包，命名为`GameServer-Java.jar`，上传到git仓库。
+代码编写完成后，将demo工程打成jar包，命名为`GameServer-Java.jar`，上传到git仓库。
 
 git仓库文件列表为
 
 ```shell
 java-gameServer
-├── JavaGameServer
+├── demo
 ├── Config.json
 ├── Dockerfile
 ├── gsmeta
@@ -91,6 +91,7 @@ java-gameServer
 ├── Makefile
 ├── README.md
 ```
+
 从控制台启动。GameServer现网启动需要游戏转商用后才可以 转商用参考  [Matchvs环境说明](http://www.matchvs.com/service?page=envGuide)
 
 
