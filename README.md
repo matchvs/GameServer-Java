@@ -18,7 +18,7 @@ java-gameServer
 ├── README.md
 ```
 
-使用IDE工具打开JavaGameServer工程。 `IDE工具建议使用IDEA或者Eclipse`
+使用IDE工具打开JavaGameServer工程。 `IDE`工具建议使用`IDEA`或者`Eclipse`
 
 ### 本地开发调试
 
@@ -45,19 +45,19 @@ public static void main(String[] args) {
 
 ### Config配置
 
-gameID 从官网控制台获取
-
-localHost IP默认为 “0.0.0.0” 即可，不建议修改。端口号可以从官网查询到：
+localHost IP默认为 “0.0.0.0” 即可，不建议修改。localPort：端口号可以从官网查询到：
 
 ![](./img/java-GameServer1.png)
 
-gameServer 只能使用系统分配的端口号，否则发布上线后将无法正常提供服务。
+**注意** gameServer 只能使用系统分配的端口号，否则发布上线后将无法正常提供服务。
 
 isRemote：独立部署配置，仅在使用 Matchvs 独立部署解决方案时开启。
 
 remoteHost：gameServer 注册服务地址，由独立部署方案提供。
 
 remotePort：gameServer 注册服务端口，由独立部署方案提供。
+
+gameID： 从官网控制台获取，gameServer独立部署方法提供。
 
 ### Demo 客户端与 gameServer 建立连接
 
@@ -77,7 +77,9 @@ gameServer 本地调试运行日志在IDE的输出终端查看，线上调试再
 
 ### 上线
 
-代码编写完成后，将demo工程打成jar包，命名为`GameServer-Java.jar`，上传到git仓库。
+代码编写完成后，将demo工程打成jar包，必须命名为`GameServer-Java.jar`，上传到git仓库。
+
+**注意** GameServer在线上环境读取的是`GameServer-Java.jar`同级目录下的Config.json文件的配置。
 
 git仓库文件列表为
 
