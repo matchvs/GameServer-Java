@@ -10,17 +10,21 @@
 
 ```shell
 java-gameServer
-├── demo
-├── Config.json
-├── Dockerfile
-├── gsmeta
-├── Makefile
+├── demo         示例工程，修改工程中的App.Java文件即可
+├── Config.json  配置文件
+├── Dockerfile   docker文件不可修改
+├── gsmeta       gameServer配置文件，不可修改。
+├── Makefile     配置文件，不可修改。
 ├── README.md
 ```
 
 使用IDE工具打开JavaGameServer工程。 `IDE`工具建议使用`IDEA`或者`Eclipse`
 
 ### 本地开发调试
+
+下载Matchvs命令行工具 参考 [gameServer命令行工具](http://www.matchvs.com/service?page=GameServerCMD)
+
+为了方便开发者在开发过程中快速调试和定位问题，matchvs 命令行工具提供了本地调试命令matchvs debug <GS_key>
 
 在APP.java文件中 path填入本地配置文件信息。配置文件参考下载文件中的Config.json文件。
 
@@ -36,10 +40,6 @@ public static void main(String[] args) {
 	}
 }
 ```
-
-下载Matchvs命令行工具 参考 [gameServer命令行工具](http://www.matchvs.com/service?page=GameServerCMD)
-
-为了方便开发者在开发过程中快速调试和定位问题，matchvs 命令行工具提供了本地调试命令matchvs debug <GS_key>
 
 启动本地项目 就可以进入调试状态。
 
@@ -86,7 +86,7 @@ git仓库文件列表为
 ```shell
 java-gameServer
 ├── demo
-├── Config.json
+├── Config.json   
 ├── Dockerfile
 ├── gsmeta
 ├── GameServer-Java.jar
