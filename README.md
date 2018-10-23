@@ -77,7 +77,7 @@ gameServer 本地调试运行日志在IDE的输出终端查看，线上调试再
 
 ### 上线
 
-代码编写完成后，将demo工程打成jar包，必须命名为`GameServer-Java.jar`，上传到git仓库。
+代码编写完成后，将demo工程打成jar包，必须命名为`GameServer-Java.jar`(Jar包必须为可执行Jar包，入口类为App.java)，上传到git仓库。
 
 **注意** GameServer在线上环境读取的是`GameServer-Java.jar`同级目录下的Config.json文件的配置。
 

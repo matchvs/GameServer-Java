@@ -1,13 +1,15 @@
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import stream.Gsdirectory;
 import stream.Simple;
 
 public class App extends GameServerRoomEventHandler {
 
-    Logger log = LoggerFactory.getLogger("App");
-
+    public Logger log = LoggerFactory.getLogger("App");
+    public int gameID = 201865;
 
     public static void main(String[] args) {
         String[] path = new String[1];
@@ -23,12 +25,68 @@ public class App extends GameServerRoomEventHandler {
     }
 
 
-
-
     @Override
     public boolean onGameClientEvent(Simple.Package.Frame clientEvent, StreamObserver<Simple.Package.Frame> clientChannel) throws InvalidProtocolBufferException {
         super.onGameClientEvent(clientEvent, clientChannel);
+        Gsmvs.Request request = Gsmvs.Request.parseFrom(clientEvent.getMessage());
         switch (clientEvent.getCmdId()) {
+            case Gshotel.HotelGsCmdID.HotelBroadcastCMDID_VALUE:
+                Gshotel.HotelBroadcast boardMsg = Gshotel.HotelBroadcast.parseFrom(clientEvent.getMessage());
+                String msg = boardMsg.getCpProto().toStringUtf8();
+                log.info("收到消息："+msg);
+                examplePush(boardMsg.getRoomID(),msg);
+                break;
+            case Gsmvs.MvsGsCmdID.MvsCreateRoomReq_VALUE:
+                log.info("创建房间成功: 房间ID："+ request.getRoomID());
+                break;
+            //删除房间
+            case Gshotel.HotelGsCmdID.HotelCloseConnet_VALUE:
+                log.info("删除房间: 房间ID："+ request.getRoomID());
+                break;
+            // 玩家checkin
+            case Gshotel.HotelGsCmdID.HotelPlayerCheckin_VALUE:
+                log.info("玩家checkin:  userID:"+request.getUserID());
+                break;
+            case Gsmvs.MvsGsCmdID.MvsJoinRoomReq_VALUE:
+                log.info("进入房间成功  玩家"+request.getUserID()+"进入房间，房间ID为："+request.getRoomID());
+                break;
+            case Gsmvs.MvsGsCmdID.MvsKickPlayerReq_VALUE:
+                log.info("踢人成功: 房间："+request.getRoomID()+"玩家："+request.getUserID()+"被踢出");
+                break;
+            case Gsmvs.MvsGsCmdID.MvsLeaveRoomReq_VALUE:
+                log.info("离开房间成功： 玩家"+request.getUserID()+"离开房间，房间ID为："+request.getRoomID());
+                break;
+            case Gsmvs.MvsGsCmdID.MvsJoinOpenReq_VALUE:
+                log.info("房间打开成功:  roomID："+ request.getRoomID());
+                break;
+            case Gsmvs.MvsGsCmdID.MvsJoinOverReq_VALUE:
+                log.info("房间关闭成功: roomID："+ request.getRoomID());
+                break;
+            case Gsmvs.MvsGsCmdID.MvsSetRoomPropertyReq_VALUE:
+                Gsmvs.SetRoomPropertyReq roomPropertyReq = Gsmvs.SetRoomPropertyReq.parseFrom(clientEvent.getMessage());
+                log.info("修改房间属性: ");
+                log.info(roomPropertyReq+"");
+                break;
+            case Gsmvs.MvsGsCmdID.MvsGetRoomDetailPush_VALUE:
+                Gsmvs.RoomDetail roomDetail = Gsmvs.RoomDetail.parseFrom(clientEvent.getMessage());
+                log.info("主动获取房间回调:");
+                log.info(roomDetail+"");
+                break;
+            case Gshotel.HotelGsCmdID.GSSetFrameSyncRateNotifyCMDID_VALUE:
+                Gshotel.GSSetFrameSyncRateNotify setFrameSyncRateNotify = Gshotel.GSSetFrameSyncRateNotify.parseFrom(clientEvent.getMessage());
+                log.info("帧率通知");
+                log.info(setFrameSyncRateNotify+"");
+                break;
+            case Gshotel.HotelGsCmdID.GSFrameDataNotifyCMDID_VALUE:
+                Gshotel.GSFrameDataNotify frameDataNotify = Gshotel.GSFrameDataNotify.parseFrom(clientEvent.getMessage());
+                log.info("帧数据通知");
+                log.info(frameDataNotify+"");
+                break;
+            case Gshotel.HotelGsCmdID.GSFrameSyncNotifyCMDID_VALUE:
+                Gshotel.GSFrameSyncNotify frameSyncNotify = Gshotel.GSFrameSyncNotify.parseFrom(clientEvent.getMessage());
+                log.info("帧同步通知");
+                log.info(frameSyncNotify+"");
+                break;
         }
         return false;
     }
@@ -49,19 +107,191 @@ public class App extends GameServerRoomEventHandler {
     @Override
     public boolean onRoomEvent(Room room, Simple.Package.Frame receivedFrame, StreamObserver<Simple.Package.Frame> clientChannel) {
         switch (receivedFrame.getCmdId()) {
-            // 收到客户端发送的消息。
-            case Gshotel.HotelGsCmdID.HotelBroadcastCMDID_VALUE:
-                Gshotel.HotelBroadcast boardMsg = null;
-                try {
-                    boardMsg = Gshotel.HotelBroadcast.parseFrom(receivedFrame.getMessage());
-                } catch (InvalidProtocolBufferException e) {
-                    e.printStackTrace();
-                }
-                String msg = boardMsg.getCpProto().toStringUtf8();
-                log.info(msg);
-                break;
         }
         return false;
+    }
+
+    /**
+     * API使用示例
+     * @param msg
+     */
+    public void examplePush(long roomID,String msg) {
+        String[]  strArray = msg.split(":");
+        switch (strArray[0]) {
+            case "kickPlayer":
+                kickPlayer(roomID,new Integer(strArray[1]));
+                break;
+            case "createRoom":
+                createRoom();
+                break;
+            case "joinOver":
+                joinOver(roomID,gameID);
+                break;
+            case "joinOpen":
+                joinOpen(roomID,gameID);
+                break;
+            case "getRoomDetail":
+                getRoomDetail(roomID,gameID);
+                break;
+            case "setRoomProperty":
+                setRoomProperty(roomID,gameID,strArray[1]);
+                break;
+            case "setFrameSyncRate":
+                setFrameSyncRate(roomID,gameID,new Integer(strArray[1]),new Integer(strArray[2]));
+                break;
+            case "frameBroadcast":
+                frameBroadcast(roomID,gameID,strArray[1],new Integer(strArray[2]));
+                break;
+            case "touchRoom":
+                touchRoom(roomID,gameID,new Integer(strArray[1]));
+                break;
+            case "destroyRoom":
+                destroyRoom(gameID,roomID);
+                break;
+        }
+    }
+
+
+
+    /**
+     * 主动踢人方法
+     * @param RoomID 房间ID
+     * @param userID 被踢用户ID
+     */
+    public void kickPlayer(long RoomID,int userID) {
+        Gsmvs.KickPlayer.Builder kickPlayer = Gsmvs.KickPlayer.newBuilder();
+        kickPlayer.setRoomID(RoomID);
+        kickPlayer.setUserID(userID);
+        GameServerData.MvsResponseObserver.onNext(GameSeverUtil.PushToMvsBuild(Gsmvs.MvsGsCmdID.MvsKickPlayerRsp_VALUE,kickPlayer.build().toByteString()));
+    }
+
+    /**
+     * 主动关闭房间
+     * @param roomID
+     * @param gameID
+     */
+    public void joinOver(long roomID,int gameID) {
+        Gsmvs.JoinOverReq.Builder joinOverReq = Gsmvs.JoinOverReq.newBuilder();
+        joinOverReq.setGameID(gameID);
+        joinOverReq.setRoomID(roomID);
+        GameServerData.MvsResponseObserver.onNext(GameSeverUtil.PushToMvsBuild(Gsmvs.MvsGsCmdID.MvsJoinOverReq_VALUE, joinOverReq.build().toByteString()));
+    }
+
+    /**
+     * 主动打开房间
+     * @param roomID
+     * @param gameID
+     */
+    public void joinOpen(long roomID,int gameID) {
+        Gsmvs.JoinOpenReq.Builder joinOpenReq = Gsmvs.JoinOpenReq.newBuilder();
+        joinOpenReq.setGameID(gameID);
+        joinOpenReq.setRoomID(roomID);
+        GameServerData.MvsResponseObserver.onNext(GameSeverUtil.PushToMvsBuild(Gsmvs.MvsGsCmdID.MvsJoinOpenReq_VALUE, joinOpenReq.build().toByteString()));
+    }
+
+    /**
+     * 主动获取房间详情
+     * @param roomID
+     * @param gameID
+     */
+    public void getRoomDetail(long roomID, int gameID) {
+        Gsmvs.GetRoomDetailReq.Builder getRoomDetail = Gsmvs.GetRoomDetailReq.newBuilder();
+        getRoomDetail.setRoomID(roomID);
+        getRoomDetail.setGameID(gameID);
+        GameServerData.MvsResponseObserver.onNext(GameSeverUtil.PushToMvsBuild(Gsmvs.MvsGsCmdID.MvsGetRoomDetailReq_VALUE, getRoomDetail.build().toByteString()));
+    }
+
+    /**
+     * 主动修改房间属性
+     * @param roomID
+     * @param gameID
+     * @param roomProperty
+     */
+    public void setRoomProperty(long roomID,int gameID,String roomProperty) {
+        Gsmvs.SetRoomPropertyReq.Builder roomPropertyReq = Gsmvs.SetRoomPropertyReq.newBuilder();
+        roomPropertyReq.setRoomProperty(ByteString.copyFromUtf8(roomProperty));
+        roomPropertyReq.setRoomID(roomID);
+        roomPropertyReq.setGameID(gameID);
+        GameServerData.MvsResponseObserver.onNext(GameSeverUtil.PushToMvsBuild(Gsmvs.MvsGsCmdID.MvsSetRoomPropertyReq_VALUE, roomPropertyReq.build().toByteString()));
+    }
+
+    /**
+     * 主动设置帧同步帧率
+     * @param roomID 房间号
+     * @param gameID 游戏ID
+     * @param rate 帧率 最大为20
+     * @param enableGS 是否同步给GameServer 0：不参与； 1：参与
+     */
+    public void setFrameSyncRate(long roomID, int gameID, int rate, int enableGS) {
+        Gshotel.GSSetFrameSyncRate.Builder setFrameSyncRateReq = Gshotel.GSSetFrameSyncRate.newBuilder();
+        setFrameSyncRateReq.setGameID(gameID);
+        setFrameSyncRateReq.setRoomID(roomID);
+        setFrameSyncRateReq.setFrameRate(rate);
+        setFrameSyncRateReq.setPriority(0);
+        setFrameSyncRateReq.setFrameIdx(1);
+        setFrameSyncRateReq.setEnableGS(enableGS);
+        GameServerData.HotelResponseObserver.onNext(GameSeverUtil.PushToHotelBuild(
+                Gshotel.HotelGsCmdID.GSSetFrameSyncRateCMDID_VALUE,setFrameSyncRateReq.build().toByteString()));
+    }
+
+    /**
+     * 发送帧消息
+     * @param roomID
+     * @param gameID
+     * @param cpProto
+     * @param operation
+     */
+    public void frameBroadcast(long roomID,int gameID,String cpProto,int operation) {
+        Gshotel.GSFrameBroadcast.Builder frameBroadcast = Gshotel.GSFrameBroadcast.newBuilder();
+        frameBroadcast.setCpProto(ByteString.copyFromUtf8(cpProto));
+        frameBroadcast.setGameID(gameID);
+        frameBroadcast.setRoomID(roomID);
+        frameBroadcast.setOperation(operation);
+        GameServerData.HotelResponseObserver.onNext(GameSeverUtil.PushToHotelBuild(
+                Gshotel.HotelGsCmdID.GSFrameBroadcastCMDID_VALUE,frameBroadcast.build().toByteString()));
+    }
+
+
+    /**
+     * 创建房间
+     */
+    public void createRoom() {
+        Gsdirectory.RoomInfo.Builder roomInfo = Gsdirectory.RoomInfo.newBuilder();
+        String roomName = "game server room";
+        roomInfo.setRoomName(roomName);
+        roomInfo.setMaxPlayer(2);
+        roomInfo.setMode(1);
+        roomInfo.setCanWatch(1);
+        roomInfo.setVisibility(1);
+        roomInfo.setRoomProperty(ByteString.copyFromUtf8("Hello"));
+        GameSeverUtil.createRoom(roomInfo);
+    }
+
+    /**
+     * 设置房间存活时间
+     * @param RoomID
+     * @param gameID
+     * @param Ttl
+     */
+    public void touchRoom(long RoomID,int gameID, int Ttl) {
+        Gsdirectory.TouchRoom.Builder touchRoom =  Gsdirectory.TouchRoom.newBuilder();
+        touchRoom.setGameID(gameID);
+        touchRoom.setRoomID(RoomID);
+        touchRoom.setTtl(Ttl);
+        GameSeverUtil.touchRoom(touchRoom);
+    }
+
+
+    /**
+     * 销毁房间
+     * @param GameID
+     * @param roomID
+     */
+    public void destroyRoom (int GameID,long roomID) {
+        Gsdirectory.DestroyRoom.Builder destroyRoom = Gsdirectory.DestroyRoom.newBuilder();
+        destroyRoom.setGameID(GameID);
+        destroyRoom.setRoomID(roomID);
+        GameSeverUtil.destroyRoom(destroyRoom);
     }
 
 
