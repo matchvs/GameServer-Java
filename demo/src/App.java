@@ -9,7 +9,6 @@ import stream.Simple;
 public class App extends GameServerRoomEventHandler {
 
     public Logger log = LoggerFactory.getLogger("App");
-    public int gameID = 201865;
 
     public static void main(String[] args) {
         String[] path = new String[1];
@@ -122,31 +121,31 @@ public class App extends GameServerRoomEventHandler {
                 kickPlayer(roomID,new Integer(strArray[1]));
                 break;
             case "createRoom":
-                createRoom();
+                createRoom(new Integer(strArray[1]));
                 break;
             case "joinOver":
-                joinOver(roomID,gameID);
+                joinOver(roomID);
                 break;
             case "joinOpen":
-                joinOpen(roomID,gameID);
+                joinOpen(roomID);
                 break;
             case "getRoomDetail":
-                getRoomDetail(roomID,gameID);
+                getRoomDetail(roomID);
                 break;
             case "setRoomProperty":
-                setRoomProperty(roomID,gameID,strArray[1]);
+                setRoomProperty(roomID,strArray[1]);
                 break;
             case "setFrameSyncRate":
-                setFrameSyncRate(roomID,gameID,new Integer(strArray[1]),new Integer(strArray[2]));
+                setFrameSyncRate(roomID,new Integer(strArray[1]),new Integer(strArray[2]));
                 break;
             case "frameBroadcast":
-                frameBroadcast(roomID,gameID,strArray[1],new Integer(strArray[2]));
+                frameBroadcast(roomID,strArray[1],new Integer(strArray[2]));
                 break;
             case "touchRoom":
-                touchRoom(roomID,gameID,new Integer(strArray[1]));
+                touchRoom(roomID,new Integer(strArray[1]));
                 break;
             case "destroyRoom":
-                destroyRoom(gameID,roomID);
+                destroyRoom(Long.parseLong(strArray[1]));
                 break;
         }
     }
@@ -162,69 +161,64 @@ public class App extends GameServerRoomEventHandler {
         Gsmvs.KickPlayer.Builder kickPlayer = Gsmvs.KickPlayer.newBuilder();
         kickPlayer.setRoomID(RoomID);
         kickPlayer.setUserID(userID);
-        GameServerData.MvsResponseObserver.onNext(GameSeverUtil.PushToMvsBuild(Gsmvs.MvsGsCmdID.MvsKickPlayerRsp_VALUE,kickPlayer.build().toByteString()));
+        GameServerData.MvsResponseObserver.onNext(GameSeverUtil.PushToMvsBuild(Gsmvs.MvsGsCmdID.MvsKickPlayerReq_VALUE,kickPlayer.build().toByteString()));
     }
 
     /**
      * 主动关闭房间
-     * @param roomID
-     * @param gameID
+     * @param roomID 房间ID
      */
-    public void joinOver(long roomID,int gameID) {
+    public void joinOver(long roomID) {
         Gsmvs.JoinOverReq.Builder joinOverReq = Gsmvs.JoinOverReq.newBuilder();
-        joinOverReq.setGameID(gameID);
+        joinOverReq.setGameID(GameServerData.gameID);
         joinOverReq.setRoomID(roomID);
         GameServerData.MvsResponseObserver.onNext(GameSeverUtil.PushToMvsBuild(Gsmvs.MvsGsCmdID.MvsJoinOverReq_VALUE, joinOverReq.build().toByteString()));
     }
 
     /**
      * 主动打开房间
-     * @param roomID
-     * @param gameID
+     * @param roomID 房间ID
      */
-    public void joinOpen(long roomID,int gameID) {
+    public void joinOpen(long roomID) {
         Gsmvs.JoinOpenReq.Builder joinOpenReq = Gsmvs.JoinOpenReq.newBuilder();
-        joinOpenReq.setGameID(gameID);
+        joinOpenReq.setGameID(GameServerData.gameID);
         joinOpenReq.setRoomID(roomID);
         GameServerData.MvsResponseObserver.onNext(GameSeverUtil.PushToMvsBuild(Gsmvs.MvsGsCmdID.MvsJoinOpenReq_VALUE, joinOpenReq.build().toByteString()));
     }
 
     /**
      * 主动获取房间详情
-     * @param roomID
-     * @param gameID
+     * @param roomID 房间ID
      */
-    public void getRoomDetail(long roomID, int gameID) {
+    public void getRoomDetail(long roomID) {
         Gsmvs.GetRoomDetailReq.Builder getRoomDetail = Gsmvs.GetRoomDetailReq.newBuilder();
         getRoomDetail.setRoomID(roomID);
-        getRoomDetail.setGameID(gameID);
+        getRoomDetail.setGameID(GameServerData.gameID);
         GameServerData.MvsResponseObserver.onNext(GameSeverUtil.PushToMvsBuild(Gsmvs.MvsGsCmdID.MvsGetRoomDetailReq_VALUE, getRoomDetail.build().toByteString()));
     }
 
     /**
      * 主动修改房间属性
-     * @param roomID
-     * @param gameID
-     * @param roomProperty
+     * @param roomID 房间ID
+     * @param roomProperty 修改的房间属性
      */
-    public void setRoomProperty(long roomID,int gameID,String roomProperty) {
+    public void setRoomProperty(long roomID,String roomProperty) {
         Gsmvs.SetRoomPropertyReq.Builder roomPropertyReq = Gsmvs.SetRoomPropertyReq.newBuilder();
         roomPropertyReq.setRoomProperty(ByteString.copyFromUtf8(roomProperty));
         roomPropertyReq.setRoomID(roomID);
-        roomPropertyReq.setGameID(gameID);
+        roomPropertyReq.setGameID(GameServerData.gameID);
         GameServerData.MvsResponseObserver.onNext(GameSeverUtil.PushToMvsBuild(Gsmvs.MvsGsCmdID.MvsSetRoomPropertyReq_VALUE, roomPropertyReq.build().toByteString()));
     }
 
     /**
      * 主动设置帧同步帧率
      * @param roomID 房间号
-     * @param gameID 游戏ID
      * @param rate 帧率 最大为20
      * @param enableGS 是否同步给GameServer 0：不参与； 1：参与
      */
-    public void setFrameSyncRate(long roomID, int gameID, int rate, int enableGS) {
+    public void setFrameSyncRate(long roomID, int rate, int enableGS) {
         Gshotel.GSSetFrameSyncRate.Builder setFrameSyncRateReq = Gshotel.GSSetFrameSyncRate.newBuilder();
-        setFrameSyncRateReq.setGameID(gameID);
+        setFrameSyncRateReq.setGameID(GameServerData.gameID);
         setFrameSyncRateReq.setRoomID(roomID);
         setFrameSyncRateReq.setFrameRate(rate);
         setFrameSyncRateReq.setPriority(0);
@@ -236,15 +230,14 @@ public class App extends GameServerRoomEventHandler {
 
     /**
      * 发送帧消息
-     * @param roomID
-     * @param gameID
-     * @param cpProto
-     * @param operation
+     * @param roomID 房间ID
+     * @param cpProto 负载消息
+     * @param operation  0：只发客户端；1：只发GS；2：同时发送客户端和GS
      */
-    public void frameBroadcast(long roomID,int gameID,String cpProto,int operation) {
+    public void frameBroadcast(long roomID,String cpProto,int operation) {
         Gshotel.GSFrameBroadcast.Builder frameBroadcast = Gshotel.GSFrameBroadcast.newBuilder();
         frameBroadcast.setCpProto(ByteString.copyFromUtf8(cpProto));
-        frameBroadcast.setGameID(gameID);
+        frameBroadcast.setGameID(GameServerData.gameID);
         frameBroadcast.setRoomID(roomID);
         frameBroadcast.setOperation(operation);
         GameServerData.HotelResponseObserver.onNext(GameSeverUtil.PushToHotelBuild(
@@ -254,8 +247,9 @@ public class App extends GameServerRoomEventHandler {
 
     /**
      * 创建房间
+     * @param Ttl 房间存活时间
      */
-    public void createRoom() {
+    public void createRoom(int Ttl) {
         Gsdirectory.RoomInfo.Builder roomInfo = Gsdirectory.RoomInfo.newBuilder();
         String roomName = "game server room";
         roomInfo.setRoomName(roomName);
@@ -264,18 +258,17 @@ public class App extends GameServerRoomEventHandler {
         roomInfo.setCanWatch(1);
         roomInfo.setVisibility(1);
         roomInfo.setRoomProperty(ByteString.copyFromUtf8("Hello"));
-        GameSeverUtil.createRoom(roomInfo);
+        GameSeverUtil.createRoom(roomInfo,Ttl);
     }
 
     /**
      * 设置房间存活时间
-     * @param RoomID
-     * @param gameID
-     * @param Ttl
+     * @param RoomID 房间ID
+     * @param Ttl 房间存活时间
      */
-    public void touchRoom(long RoomID,int gameID, int Ttl) {
+    public void touchRoom(long RoomID, int Ttl) {
         Gsdirectory.TouchRoom.Builder touchRoom =  Gsdirectory.TouchRoom.newBuilder();
-        touchRoom.setGameID(gameID);
+        touchRoom.setGameID(GameServerData.gameID);
         touchRoom.setRoomID(RoomID);
         touchRoom.setTtl(Ttl);
         GameSeverUtil.touchRoom(touchRoom);
@@ -284,12 +277,11 @@ public class App extends GameServerRoomEventHandler {
 
     /**
      * 销毁房间
-     * @param GameID
-     * @param roomID
+     * @param roomID 房间ID
      */
-    public void destroyRoom (int GameID,long roomID) {
+    public void destroyRoom (long roomID) {
         Gsdirectory.DestroyRoom.Builder destroyRoom = Gsdirectory.DestroyRoom.newBuilder();
-        destroyRoom.setGameID(GameID);
+        destroyRoom.setGameID(GameServerData.gameID);
         destroyRoom.setRoomID(roomID);
         GameSeverUtil.destroyRoom(destroyRoom);
     }
