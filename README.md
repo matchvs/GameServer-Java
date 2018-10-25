@@ -51,13 +51,21 @@ localHost IP默认为 “0.0.0.0” 即可，不建议修改。localPort：端�
 
 **注意** gameServer 只能使用系统分配的端口号，否则发布上线后将无法正常提供服务。
 
-isRemote：独立部署配置，仅在使用 Matchvs 独立部署解决方案时开启。
+isRemote：本地调试时使用GameServer主动创建房间，销毁房间，设置房间存活时间需要开启。在使用 Matchvs 独立部署解决方案时也需要开启。
 
-remoteHost：gameServer 注册服务地址，由独立部署方案提供。
+remoteHost：gameServer 注册服务地址，从Matchvs命令行工具获取。独立部署方案单独提供。
 
-remotePort：gameServer 注册服务端口，由独立部署方案提供。
+remotePort：gameServer 注册服务端口，从Matchvs命令行工具获取。独立部署方案单独提供。
 
-gameID： 从官网控制台获取，gameServer独立部署方法提供。
+gameID： 从官网控制台获取，gameServer独立部署模式下单独提供。
+
+svcName： 从Matchvs命令行工具获取。独立部署方案单独提供。
+
+podName： 从Matchvs命令行工具获取。独立部署方案单独提供。
+
+![](./img/java-GameServer3.png)
+
+**注意** 本地调试时将对应的值填入配置文件，isRemote在上传商用环境时候设置为false。
 
 ### Demo 客户端与 gameServer 建立连接
 
