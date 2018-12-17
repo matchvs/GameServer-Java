@@ -32,6 +32,9 @@ public class App extends GameServerRoomEventHandler {
             request = Gsmvs.Request.parseFrom(clientEvent.getMessage());
 
             switch (clientEvent.getCmdId()) {
+                /**
+                 * 收到客户端发送的消息，客户端需要使用sendEVentEx()发送，具体参数参考官网文档。
+                 */
                 case Gshotel.HotelGsCmdID.HotelBroadcastCMDID_VALUE:
                     Gshotel.HotelBroadcast boardMsg = Gshotel.HotelBroadcast.parseFrom(clientEvent.getMessage());
                     String msg = boardMsg.getCpProto().toStringUtf8();
