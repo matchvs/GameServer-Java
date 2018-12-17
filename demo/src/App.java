@@ -167,6 +167,23 @@ public class App extends GameServerRoomEventHandler {
 
 
     /**
+     * 跟客户端通信
+     * @param roomID 房间ID
+     * @param msg 发送的消息  限制不能超过1024个字符
+     * @param userIDs 指定接收消息ID
+     */
+    public void sendEvent(int roomID, byte[] msg, int... userIDs) {
+        if (userIDs != null) {
+            //发送给房间中的某些玩家。
+            sendMsgToOtherUserInRoom(roomID,msg,userIDs);
+        } else {
+            //发送给房间中的所有人
+            sendMsgToAllUserInRoom(roomID,msg);
+        }
+    }
+
+
+    /**
      * 主动踢人方法
      *
      * @param RoomID 房间ID
