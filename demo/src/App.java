@@ -92,6 +92,11 @@ public class App extends GameServerRoomEventHandler {
                     log.info("帧同步通知");
                     log.info(frameSyncNotify + "");
                     break;
+                case Gshotel.HotelGsCmdID.GSGetCacheDataCMDID_VALUE:
+                    Gshotel.GSGetCacheData cacheData = Gshotel.GSGetCacheData.parseFrom(clientEvent.getMessage());
+                    log.info("接收缓存帧数据");
+                    log.info(cacheData+"");
+                    break;
             }
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
@@ -161,6 +166,9 @@ public class App extends GameServerRoomEventHandler {
                 break;
             case "destroyRoom":
                 destroyRoom(Long.parseLong(strArray[1]));
+                break;
+            case "getCacheData":
+                getCacheData(roomID,new Integer(strArray[1]));
                 break;
         }
     }
@@ -327,6 +335,21 @@ public class App extends GameServerRoomEventHandler {
         destroyRoom.setRoomID(roomID);
         GameSeverUtil.destroyRoom(destroyRoom);
     }
+
+    /**
+     * 获取帧缓存数据
+     * @param roomID 房间ID
+     * @param cacheFrameMS 断线后缓存帧数据的时间，只有帧同步有效，单位毫秒，最多有效一个小时断线后缓存帧数据的时间，只有帧同步有效，单位毫秒，最多有效一个小时
+     */
+    private void getCacheData(long roomID,int cacheFrameMS) {
+        Gshotel.GSGetCacheData.Builder getCacheData = Gshotel.GSGetCacheData.newBuilder();
+        getCacheData.setCacheFrameMS(cacheFrameMS);
+        getCacheData.setRoomID(roomID);
+        getCacheData.setGameID(GameServerData.gameID);
+        getChannel(roomID).onNext(GameSeverUtil.PushToHotelBuild(
+                Gshotel.HotelGsCmdID.GSGetCacheDataCMDID_VALUE, getCacheData.build().toByteString()));
+    }
+
 
 
 }
