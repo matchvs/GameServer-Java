@@ -156,7 +156,7 @@ public class App extends GameServerRoomEventHandler {
                 setRoomProperty(roomID, strArray[1]);
                 break;
             case "setFrameSyncRate":
-                setFrameSyncRate(roomID, new Integer(strArray[1]), new Integer(strArray[2]));
+                setFrameSyncRate(roomID, new Integer(strArray[1]), new Integer(strArray[2]),new Integer(strArray[3]),new Integer(strArray[4]));
                 break;
             case "frameBroadcast":
                 frameBroadcast(roomID, strArray[1], new Integer(strArray[2]));
@@ -260,16 +260,19 @@ public class App extends GameServerRoomEventHandler {
      *
      * @param roomID   房间号
      * @param rate     帧率 最大为20
+     * @param frameIndex 初始帧编号  例如 0
      * @param enableGS 是否同步给GameServer 0：不参与； 1：参与
+     * @param cacheFrameMS 缓存帧的毫秒数（0为不开启缓存功能，-1为缓存所有数据，该毫秒数的上限为1小时）
      */
-    public void setFrameSyncRate(long roomID, int rate, int enableGS) {
+    public void setFrameSyncRate(long roomID, int rate, int frameIndex ,int enableGS,int cacheFrameMS) {
         Gshotel.GSSetFrameSyncRate.Builder setFrameSyncRateReq = Gshotel.GSSetFrameSyncRate.newBuilder();
         setFrameSyncRateReq.setGameID(GameServerData.gameID);
         setFrameSyncRateReq.setRoomID(roomID);
         setFrameSyncRateReq.setFrameRate(rate);
         setFrameSyncRateReq.setPriority(0);
-        setFrameSyncRateReq.setFrameIdx(1);
+        setFrameSyncRateReq.setFrameIdx(frameIndex);
         setFrameSyncRateReq.setEnableGS(enableGS);
+        setFrameSyncRateReq.setCacheFrameMS(cacheFrameMS);
         getChannel(roomID).onNext(GameSeverUtil.PushToHotelBuild(
                 Gshotel.HotelGsCmdID.GSSetFrameSyncRateCMDID_VALUE, setFrameSyncRateReq.build().toByteString()));
     }
